@@ -1,4 +1,4 @@
-# Kip-Blog
+# KipBlog
 
 KipSQL sample application project
 
