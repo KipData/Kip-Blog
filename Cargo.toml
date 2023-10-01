@@ -26,7 +26,7 @@ opt-level= 's'
 askama = {version="0.12.0", features=["markdown"]}
 tokio = {version="1.28.0", features = ["macros", "rt-multi-thread"]}
 axum =  "0.6.17"
-kip-sql = "0.0.1-alpha.0"
+kip-sql = "0.0.1-alpha.3"
 tower-http = {version = "0.4", features=["full"]}
 itertools = "0.10"
 chrono = "0.4.26"

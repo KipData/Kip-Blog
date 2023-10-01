@@ -9,9 +9,14 @@ use tower_http::services::ServeDir;
 use std::sync::Arc;
 
 use askama::Template;
+use chrono::NaiveDateTime;
 use itertools::Itertools;
 use kip_sql::db::{Database, DatabaseError};
+use kip_sql::implement_from_tuple;
 use kip_sql::storage::kip::KipStorage;
+use kip_sql::types::value::DataValue;
+use kip_sql::types::tuple::Tuple;
+use kip_sql::types::LogicalType;
 
 pub(crate) const BANNER: &str = "
  █████   ████  ███               ███████████  ████
@@ -32,7 +37,7 @@ pub(crate) const BANNER: &str = "
 #[template(path = "posts.html")]
 struct PostTemplate<'a> {
     post_title: &'a str,
-    post_date: &'a str,
+    post_date: String,
     post_body: &'a str,
 }
 
@@ -47,12 +52,30 @@ pub struct IndexTemplate<'a> {
 
 // SQL query will return all posts  
 // into a Vec<Post>
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Post {
     pub post_title: String,
-    pub post_date: String,
+    pub post_date: NaiveDateTime,
     pub post_body: String,
 }
+
+implement_from_tuple!(Post, (
+    post_title: String => |post: &mut Post, value: DataValue| {
+        if let Some(title) = value.utf8() {
+            post.post_title = title;
+        }
+    },
+    post_date: NaiveDateTime => |post: &mut Post, value: DataValue| {
+        if let Some(date_time) = value.datetime() {
+            post.post_date = date_time;
+        }
+    },
+    post_body: String => |post: &mut Post, value: DataValue| {
+        if let Some(body) = value.utf8() {
+            post.post_body = body;
+        }
+    }
+));
 
 // Our custom Askama filter to replace spaces with dashes in the title
 mod filters {
@@ -67,14 +90,19 @@ mod filters {
 // Path to extract the query: localhost:4000/post/thispart
 // State that holds a Vec<Post> used to render the post that the query matches 
 async fn post(Path(query_title): Path<String>, State(state): State<Arc<Database<KipStorage>>>) -> impl IntoResponse {
-    let mut template = PostTemplate{post_title: "none", post_date: "none", post_body: "none"};
+    let mut template = PostTemplate{post_title: "none", post_date: "none".to_string(), post_body: "none"};
     let posts = get_posts(&state).await.unwrap();
     // if the user's query matches a post title then render a template
     for post in &posts {
         if query_title == post.post_title {
+            let post_date = post
+                .post_date
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string();
+
             template = PostTemplate{
                 post_title: &post.post_title,
-                post_date: &post.post_date,
+                post_date,
                 post_body: &post.post_body
             };
             break;
@@ -136,12 +164,6 @@ async fn get_posts(kip_sql: &Database<KipStorage>) -> Result<Vec<Post>, Database
     Ok(kip_sql.run("select post_title, post_date, post_body from myposts")
         .await?
         .into_iter()
-        .map(|tuple| {
-            Post {
-                post_title: tuple.values[0].to_string(),
-                post_date: tuple.values[1].to_string(),
-                post_body: tuple.values[2].to_string(),
-            }
-        })
+        .map(|tuple| Post::from(tuple))
         .collect_vec())
 }

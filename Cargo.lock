@@ -1160,9 +1160,9 @@ dependencies = [
 
 [[package]]
 name = "kip-sql"
-version = "0.0.1-alpha.0"
+version = "0.0.1-alpha.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "925823c30e7d19daad886a92b2a28c4c8fbf8d5acca0b0f17cd7549ee135bb0d"
+checksum = "28fab3ac39dc5df53f4562e18ab5c371857c2b59dd710f939efeeba2fe2685c4"
 dependencies = [
  "ahash 0.8.3",
  "async-recursion",
@@ -1192,9 +1192,9 @@ dependencies = [
 
 [[package]]
 name = "kip_db"
-version = "0.1.2-alpha.15"
+version = "0.1.2-alpha.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36d9fd06cf57c3ae1c0cb4121aad6cfdf7bbfdf0b44fc7da1527b5e6b2a91d03"
+checksum = "8fcb93e2a44c122b5ddd9cec5d0ab377519208fa6e059c32b06c930f1af5762a"
 dependencies = [
  "async-trait",
  "bincode",
