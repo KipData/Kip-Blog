@@ -122,9 +122,9 @@ async fn main() {
         .nest_service("/assets", ServeDir::new("assets"));
 
     println!("{} \nVersion: {}\n", BANNER, env!("CARGO_PKG_VERSION"));
-    println!("Listening on port 4000");
+    println!("Listening on port 80");
 
-    axum::Server::bind(&"0.0.0.0:4000".parse().unwrap())
+    axum::Server::bind(&"0.0.0.0:80".parse().unwrap())
         .serve(app.into_make_service())
         .await
         .unwrap();
